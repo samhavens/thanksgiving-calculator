@@ -1,0 +1,312 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="UTF-8">
+  <title>paul justison turkey planner 3000</title>
+  <style>
+    body {
+      background-color: #ffffcc;
+      background-image: linear-gradient(90deg, rgba(0,0,0,0.03) 1px, transparent 1px),
+                        linear-gradient(180deg, rgba(0,0,0,0.03) 1px, transparent 1px);
+      background-size: 12px 12px;
+      font-family: "comic sans ms", "comic neue", system-ui, sans-serif;
+      color: #000033;
+      margin: 0;
+    }
+    .page {
+      max-width: 900px;
+      margin: 0 auto;
+      padding: 16px;
+      border-left: 4px double #0000aa;
+      border-right: 4px double #0000aa;
+      background-color: rgba(255,255,255,0.8);
+    }
+    h1 {
+      text-align: center;
+      font-size: 28px;
+      text-transform: lowercase;
+      margin-bottom: 4px;
+    }
+    h2 {
+      font-size: 18px;
+      margin-top: 18px;
+      border-bottom: 2px dotted #000099;
+      text-transform: lowercase;
+    }
+    .subtitle {
+      text-align: center;
+      font-size: 13px;
+      margin-bottom: 16px;
+    }
+    .retro-rule {
+      border-top: 4px ridge #000099;
+      margin: 10px 0;
+    }
+    .input-panel {
+      border: 3px groove #000099;
+      padding: 10px;
+      margin-bottom: 12px;
+      background-color: #fffff0;
+    }
+    label {
+      font-size: 13px;
+      display: inline-block;
+      margin-bottom: 4px;
+    }
+    input[type="number"],
+    input[type="time"] {
+      font-size: 14px;
+      padding: 4px;
+      margin-right: 12px;
+      border: 2px inset #9999ff;
+      background-color: #ffffff;
+    }
+    button {
+      font-size: 14px;
+      padding: 6px 14px;
+      border: 3px outset #0000aa;
+      background-color: #ccccff;
+      cursor: pointer;
+      text-transform: lowercase;
+    }
+    button:active {
+      border-style: inset;
+      background-color: #bbbbff;
+    }
+    .results {
+      font-size: 14px;
+      line-height: 1.4;
+    }
+    .results.hidden {
+      display: none;
+    }
+    table.schedule {
+      border-collapse: collapse;
+      margin-top: 4px;
+      margin-bottom: 10px;
+      font-size: 13px;
+      width: 100%;
+    }
+    table.schedule th,
+    table.schedule td {
+      border: 1px solid #000099;
+      padding: 4px 6px;
+      text-align: left;
+    }
+    table.schedule th {
+      background-color: #ccccff;
+    }
+    .tiny-note {
+      font-size: 11px;
+    }
+    .blinky {
+      animation: blink 1s steps(1, start) infinite;
+    }
+    @keyframes blink {
+      50% { opacity: 0; }
+    }
+    .footer {
+      font-size: 10px;
+      text-align: center;
+      margin-top: 12px;
+      color: #333366;
+    }
+  </style>
+</head>
+<body>
+  <div class="page">
+    <h1>paul justison turkey planner 3000</h1>
+    <div class="subtitle">
+      <span class="blinky">★</span> enter your bird + dinner time, get a fully timed ritual <span class="blinky">★</span>
+    </div>
+
+    <div class="retro-rule"></div>
+
+    <div class="input-panel">
+      <label>
+        turkey weight (lbs):
+        <input type="number" id="weight" min="8" max="30" step="0.1" value="16.0">
+      </label>
+      <br>
+      <label>
+        time you want to EAT:
+        <input type="time" id="mealTime" value="16:00">
+      </label>
+      <br><br>
+      <button onclick="calculatePlan()">calculate my turkey fate</button>
+      <span id="error" style="color:#cc0000; font-size:12px; margin-left:8px;"></span>
+    </div>
+
+    <div id="results" class="results hidden">
+      <h2>custom schedule</h2>
+      <p id="summary"></p>
+
+      <table class="schedule">
+        <thead>
+          <tr>
+            <th>time</th>
+            <th>what you’re doing</th>
+          </tr>
+        </thead>
+        <tbody id="scheduleBody"></tbody>
+      </table>
+
+      <p class="tiny-note">
+        times are approximate. if the turkey hits temp early, just pull it and let it rest. it stays hot a LONG time.
+      </p>
+
+      <h2>step-by-step ritual</h2>
+      <ol id="directions"></ol>
+
+      <h2>core numbers</h2>
+      <ul id="numbers"></ul>
+    </div>
+
+    <div class="footer">
+      © 1996-2025 paul justison fan club. optimized for netscape navigator 3.0 and above.
+    </div>
+  </div>
+
+  <script>
+    function parseTimeToDate(timeStr) {
+      var parts = timeStr.split(":");
+      if (parts.length < 2) return null;
+      var h = parseInt(parts[0], 10);
+      var m = parseInt(parts[1], 10);
+      if (isNaN(h) || isNaN(m)) return null;
+      var d = new Date();
+      d.setSeconds(0, 0);
+      d.setHours(h, m, 0, 0);
+      return d;
+    }
+
+    function addMinutes(date, minutes) {
+      return new Date(date.getTime() + minutes * 60000);
+    }
+
+    function formatTime(date) {
+      var h = date.getHours();
+      var m = date.getMinutes();
+      var ampm = h >= 12 ? "pm" : "am";
+      h = h % 12;
+      if (h === 0) h = 12;
+      var mm = m < 10 ? "0" + m : m;
+      return h + ":" + mm + " " + ampm;
+    }
+
+    function roundToNearest5(mins) {
+      return Math.round(mins / 5) * 5;
+    }
+
+    function calculatePlan() {
+      var weight = parseFloat(document.getElementById("weight").value);
+      var mealTimeStr = document.getElementById("mealTime").value;
+      var errorEl = document.getElementById("error");
+      errorEl.textContent = "";
+
+      if (isNaN(weight) || weight <= 0) {
+        errorEl.textContent = "pls enter a real turkey, not a theoretical one.";
+        return;
+      }
+      var mealTime = parseTimeToDate(mealTimeStr);
+      if (!mealTime) {
+        errorEl.textContent = "meal time is cursed. try again.";
+        return;
+      }
+
+      // core assumptions
+      var cookMinutesRaw = weight * 15;        // 15 min / lb
+      var cookMinutes = roundToNearest5(cookMinutesRaw);
+      var restMinutes = 75;                    // 1h15
+      var carveMinutes = 15;
+      var preheatMinutes = 30;
+      var temperMinutes = 120;                 // out of fridge
+
+      // work backwards
+      var eatTime = mealTime;
+      var carveStart = addMinutes(eatTime, -carveMinutes);
+      var restEnd = carveStart;
+      var pullTime = addMinutes(restEnd, -restMinutes);
+      var ovenIn = addMinutes(pullTime, -cookMinutes);
+      var preheatStart = addMinutes(ovenIn, -preheatMinutes);
+      var fridgeOut = addMinutes(ovenIn, -temperMinutes);
+
+      // build schedule
+      var rows = [
+        { time: fridgeOut, label: "take turkey out of fridge to start coming to room temp" },
+        { time: preheatStart, label: "start preheating oven to 325°f" },
+        { time: ovenIn, label: "put turkey in oven, start basting every 30 min" },
+        { time: pullTime, label: "pull turkey when thigh hits 165-170°f (or breast ~160°f)" },
+        { time: restEnd, label: "start carving (legs & thighs, then breasts, then wings)" },
+        { time: carveStart, label: "if you forgot: this is your *carving window*" },
+        { time: eatTime, label: "sit down and say THANKS" }
+      ];
+
+      rows.sort(function(a,b){ return a.time - b.time; });
+
+      var scheduleBody = document.getElementById("scheduleBody");
+      scheduleBody.innerHTML = "";
+      rows.forEach(function(r) {
+        var tr = document.createElement("tr");
+        var tdTime = document.createElement("td");
+        var tdLabel = document.createElement("td");
+        tdTime.textContent = formatTime(r.time);
+        tdLabel.textContent = r.label;
+        tr.appendChild(tdTime);
+        tr.appendChild(tdLabel);
+        scheduleBody.appendChild(tr);
+      });
+
+      // summary
+      var summary = document.getElementById("summary");
+      summary.textContent =
+        "for a " + weight.toFixed(1) +
+        " lb turkey, plan on about " +
+        (cookMinutes / 60).toFixed(1) +
+        " hours of roasting at 325°f, plus a solid rest. " +
+        "if you want to eat at " + formatTime(eatTime) +
+        ", your day looks like this:";
+
+      // directions
+      var directions = document.getElementById("directions");
+      directions.innerHTML = "";
+
+      var steps = [
+        "day before: pat the turkey dry and sprinkle 2–3 tbsp kosher or sea salt all over, including inside the cavity. let it dry-brine in the fridge overnight on a rack.",
+        "about when the turkey comes out of the fridge (" + formatTime(fridgeOut) + "): prep a bed of onions, carrots, celery, leeks, garlic, and the neck/innards in the roasting pan with a bit of olive oil.",
+        "mix very soft butter with minced fresh thyme, sage, basil, and oregano/marjoram.",
+        "loosely stuff the turkey with chopped herbs and some veg. smear the herbed butter all over the outside (and under the breast skin if you feel ambitious). place turkey on the veg bed, add the halved garlic head at the cavity opening, and truss the legs.",
+        "when the oven hits 325°f (" + formatTime(ovenIn) + "): put the turkey in. roast at 325°f for about " + cookMinutes + " minutes, basting every 30 minutes with pan juices / extra butter.",
+        "start checking temp for real during the last 30–45 minutes. pull the turkey around " + formatTime(pullTime) + " when the thigh is 165-170°f or the breast is ~160°f and juices run clear.",
+        "let it rest, loosely tented, until about " + formatTime(restEnd) + ". you can use this 75-minute window to finish sides and make gravy from the drippings and alliums.",
+        "carve from " + formatTime(restEnd) + " to " + formatTime(addMinutes(restEnd, carveMinutes)) + ": legs and thighs first, then remove whole breasts and slice them crosswise. wings and bonus bits last.",
+        "serve around " + formatTime(eatTime) + " and accept praise with humility (or not)."
+      ];
+
+      steps.forEach(function(text) {
+        var li = document.createElement("li");
+        li.textContent = text;
+        directions.appendChild(li);
+      });
+
+      // numbers
+      var numbers = document.getElementById("numbers");
+      numbers.innerHTML = "";
+      function addNumber(label, value) {
+        var li = document.createElement("li");
+        li.textContent = label + ": " + value;
+        numbers.appendChild(li);
+      }
+      addNumber("cook time", cookMinutes + " minutes (" + (cookMinutes / 60).toFixed(1) + " hours, ≈15 min/lb)");
+      addNumber("rest time", restMinutes + " minutes");
+      addNumber("carving window", carveMinutes + " minutes");
+      addNumber("out of fridge", formatTime(fridgeOut));
+      addNumber("into oven", formatTime(ovenIn));
+      addNumber("pull from oven", formatTime(pullTime));
+      addNumber("eat time", formatTime(eatTime));
+
+      document.getElementById("results").classList.remove("hidden");
+    }
+  </script>
+</body>
+</html>
