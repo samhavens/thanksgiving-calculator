@@ -2,6 +2,7 @@
 <html>
 <head>
   <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>turkey planner 3000</title>
   <style>
     body {
@@ -12,20 +13,24 @@
       font-family: "comic sans ms", "comic neue", system-ui, sans-serif;
       color: #000033;
       margin: 0;
+      font-size: 16px;
+      line-height: 1.5;
     }
     .page {
       max-width: 900px;
+      width: 100%;
       margin: 0 auto;
-      padding: 16px;
+      padding: 16px 14px 20px;
       border-left: 4px double #0000aa;
       border-right: 4px double #0000aa;
-      background-color: rgba(255,255,255,0.8);
+      background-color: rgba(255,255,255,0.88);
+      box-sizing: border-box;
     }
     h1 {
       text-align: center;
       font-size: 28px;
       text-transform: lowercase;
-      margin-bottom: 4px;
+      margin: 0 0 4px;
     }
     h2 {
       font-size: 18px;
@@ -35,47 +40,49 @@
     }
     .subtitle {
       text-align: center;
-      font-size: 13px;
+      font-size: 14px;
       margin-bottom: 16px;
     }
     .retro-rule {
       border-top: 4px ridge #000099;
-      margin: 10px 0;
+      margin: 10px 0 14px;
     }
     .input-panel {
       border: 3px groove #000099;
-      padding: 10px;
-      margin-bottom: 12px;
+      padding: 10px 10px 12px;
+      margin-bottom: 14px;
       background-color: #fffff0;
     }
     label {
-      font-size: 13px;
-      display: inline-block;
-      margin-bottom: 4px;
+      font-size: 14px;
+      display: block;
+      margin-bottom: 6px;
     }
     input[type="number"],
     input[type="time"] {
-      font-size: 14px;
-      padding: 4px;
-      margin-right: 12px;
+      font-size: 16px;
+      padding: 6px 8px;
       border: 2px inset #9999ff;
       background-color: #ffffff;
+      width: 180px;
+      max-width: 100%;
+      box-sizing: border-box;
     }
     button {
-      font-size: 14px;
-      padding: 6px 14px;
+      font-size: 16px;
+      padding: 7px 16px;
       border: 3px outset #0000aa;
       background-color: #ccccff;
       cursor: pointer;
       text-transform: lowercase;
+      margin-top: 4px;
     }
     button:active {
       border-style: inset;
       background-color: #bbbbff;
     }
     .results {
-      font-size: 14px;
-      line-height: 1.4;
+      font-size: 15px;
     }
     .results.hidden {
       display: none;
@@ -84,20 +91,20 @@
       border-collapse: collapse;
       margin-top: 4px;
       margin-bottom: 10px;
-      font-size: 13px;
+      font-size: 14px;
       width: 100%;
     }
     table.schedule th,
     table.schedule td {
       border: 1px solid #000099;
-      padding: 4px 6px;
+      padding: 6px 6px;
       text-align: left;
     }
     table.schedule th {
       background-color: #ccccff;
     }
     .tiny-note {
-      font-size: 11px;
+      font-size: 12px;
     }
     .blinky {
       animation: blink 1s steps(1, start) infinite;
@@ -106,10 +113,43 @@
       50% { opacity: 0; }
     }
     .footer {
-      font-size: 10px;
+      font-size: 11px;
       text-align: center;
-      margin-top: 12px;
+      margin-top: 14px;
       color: #333366;
+    }
+
+    /* mobile tweaks */
+    @media (max-width: 600px) {
+      .page {
+        border-left-width: 2px;
+        border-right-width: 2px;
+        padding: 12px 10px 16px;
+      }
+      h1 {
+        font-size: 22px;
+      }
+      .subtitle {
+        font-size: 13px;
+      }
+      .input-panel {
+        padding: 8px 8px 10px;
+      }
+      input[type="number"],
+      input[type="time"],
+      button {
+        width: 100%;
+        max-width: 100%;
+        margin-bottom: 6px;
+      }
+      table.schedule th,
+      table.schedule td {
+        font-size: 13px;
+        padding: 5px 4px;
+      }
+      .results {
+        font-size: 14px;
+      }
     }
   </style>
 </head>
@@ -127,14 +167,12 @@
         turkey weight (lbs):
         <input type="number" id="weight" min="8" max="30" step="0.1" value="16.0">
       </label>
-      <br>
       <label>
         time you want to EAT:
         <input type="time" id="mealTime" value="16:00">
       </label>
-      <br><br>
       <button onclick="calculatePlan()">calculate my turkey fate</button>
-      <span id="error" style="color:#cc0000; font-size:12px; margin-left:8px;"></span>
+      <span id="error" style="color:#cc0000; font-size:12px; margin-left:4px;"></span>
     </div>
 
     <div id="results" class="results hidden">
@@ -163,7 +201,7 @@
     </div>
 
     <div class="footer">
-      © 1996-2025 paul justison cooking appreciators. optimized for netscape navigator 3.0 and above.
+      © 1996–2025 paul justison cooking appreciators club. optimized for netscape navigator 3.0 and above.
     </div>
   </div>
 
@@ -263,9 +301,8 @@
         "for a " + weight.toFixed(1) +
         " lb turkey, plan on about " +
         (cookMinutes / 60).toFixed(1) +
-        " hours of roasting at 325°f, plus a solid rest. " +
-        "if you want to eat at " + formatTime(eatTime) +
-        ", your day looks like this:";
+        " hours of roasting at 325°f, plus a solid rest. if you want to eat at " +
+        formatTime(eatTime) + ", your day looks like this:";
 
       // directions
       var directions = document.getElementById("directions");
